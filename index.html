@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html><head>
+	<title>Mandelbroetchen</title>
+	<script src="jquery-3.2.1.min.js"></script>
+	<script src="gl-matrix.js"></script>
+	<script src="gfw.js"></script>
+	<script src="game.js"></script>
+	<link rel="stylesheet" type="text/css" href="gfw.css">
+	<link rel="stylesheet" type="text/css" href="game.css">
+	<script type="x-shader/x-vertex" id="vertex-shader">
+		attribute vec3 a_pos;
+		void main() {
+			gl_Position = vec4(a_pos, 1.0);
+			gl_PointSize = 64.0;
+		}
+	</script>
+	<script type="x-shader/x-fragment" id="fragment-shader">
+		precision mediump float;
+		uniform float u_green_off;
+		uniform mat3 u_transform;
+		void main() {
+			vec3 coords = vec3(gl_FragCoord.x, gl_FragCoord.y, 1.0);
+			gl_FragColor = vec4(coords.x < 0.0 ? 0.0 : coords.x/100.0, u_green_off, 0.0, 1.0);
+		}
+	</script>
+</head><body>
+	<div id="left-anchor" class="noselect">
+		<div id="monitor-box">
+			<div class="monitor-header">monitor</div>
+		</div>
+		<div id="controls-box">
+			<div class="controls-header">controls</div>
+		</div>
+	</div>
+	<div id="left-anchor-2"></div>
+</body></html>
