@@ -147,6 +147,11 @@ Gfw.cameraMovement = function(speed){
 		cameraX = Math.cos(cameraMoveAngle);
 		cameraY = Math.sin(cameraMoveAngle);
 	}
+	if(Input.isKeyDown(81)){
+		Gfw.camera.rotation += Time.deltaTime;
+	} else if(Input.isKeyDown(69)){
+		Gfw.camera.rotation -= Time.deltaTime;
+	}	
 	Gfw.camera.position.x += cameraX * Time.rawDeltaTime * cameraSpeed / Gfw.camera.zoom;
 	Gfw.camera.position.y += cameraY * Time.rawDeltaTime * cameraSpeed / Gfw.camera.zoom;
 }

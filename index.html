@@ -2,7 +2,7 @@
 <html><head>
 	<title>Mandelbroetchen</title>
 	<script src="jquery-3.2.1.min.js"></script>
-	<script src="gl-matrix.js"></script>
+	<script src="gl-matrix/dist/gl-matrix.js"></script>
 	<script src="gfw.js"></script>
 	<script src="game.js"></script>
 	<link rel="stylesheet" type="text/css" href="gfw.css">
@@ -15,12 +15,38 @@
 		}
 	</script>
 	<script type="x-shader/x-fragment" id="fragment-shader">
-		precision mediump float;
+		precision highp float;
 		uniform float u_green_off;
 		uniform mat3 u_transform;
 		void main() {
-			vec3 coords = vec3(gl_FragCoord.x, gl_FragCoord.y, 1.0);
-			gl_FragColor = vec4(coords.x < 0.0 ? 0.0 : coords.x/100.0, u_green_off, 0.0, 1.0);
+			vec3 coords = u_transform * vec3(gl_FragCoord.x, gl_FragCoord.y, 1.0);
+		/*	float dst = sqrt(coords.x*coords.x + coords.y*coords.y);
+			if(dst <= 64.0){
+				float c = dst/64.0*u_green_off;
+				gl_FragColor = vec4(1.0-c, 0.0, c, 1.0);
+			} else {
+				gl_FragColor = vec4((coords.x+128.0)/256.0, u_green_off, 0, 1.0);
+			}  */
+			float cr = coords.x;
+			float ci = coords.y;
+			float zr = cr;
+			float zi = ci;
+			float zr_sqr = cr*cr;
+			float zi_sqr = ci*ci;
+			float a, b, c, d;
+			for(int iter = 0; iter < 50; iter++){
+				float a = zr;
+				float b = zi;
+				zr = a*a-b*b + cr;
+				zi = a*b+b*a + ci;
+				zr_sqr = zr*zr;
+				zi_sqr = zi*zi;
+				if(zr_sqr+zi_sqr > 4.0){
+					gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+					return;
+				}
+			}			
+			gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 		}
 	</script>
 </head><body>

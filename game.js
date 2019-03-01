@@ -7,6 +7,8 @@ var vertices = [
 ];
 var vertexBuffer;
 var locations = {};
+var w_mat3;
+var w_vec2;
 
 $(document).ready(function(){
 	Monitor.setup();
@@ -14,7 +16,7 @@ $(document).ready(function(){
 //	Controls.add("move", "w,a,s,d");
 //	Controls.add("zoom", "r,f");
 	// setup Gfw 
-	Gfw.setup({height:10});
+	Gfw.setup({height:256});
 	Gfw.createCanvas("main", {"renderMode": RenderMode.Canvas3d});
 	Gfw.getCanvas("main").setActive();
 	Gfw.update = update;
@@ -22,6 +24,7 @@ $(document).ready(function(){
 	// init
 	init();
 	// start
+	Gfw.camera.zoom = 100;
 	Gfw.setBackgroundColor("#002");
 	Gfw.start();
 });
@@ -59,16 +62,21 @@ function init(){
 		return;
 	}
 	
+	// shader locations
 	locations.a_pos = gl.getAttribLocation(mandelbrotShader, "a_pos");
 //	locations.u_mvp = gl.getUniformLocation(mandelbrotShader, "u_mvp");
 	locations.u_green_off = gl.getUniformLocation(mandelbrotShader, "u_green_off");
 	locations.u_transform = gl.getUniformLocation(mandelbrotShader, "u_transform");
-
 	console.log(locations);
+	
+	// matrix
+	w_mat3 = glMatrix.mat3.create();
+	w_vec2 = glMatrix.vec2.create();
 	
 }
 
 function update(){
+	Gfw.cameraMovement(500.0);
 	// monitor stuffs	
 	Monitor.set("fps", Time.fps);
 	Monitor.set("time", roundToFixed(Time.sinceStart, 1));
@@ -83,9 +91,27 @@ function render(){
 	// vertex attribute
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 	gl.vertexAttribPointer(locations.a_pos, 3, gl.FLOAT, false, 0, 0); 
-	gl.enableVertexAttribArray(locations.a_pos);	
+	gl.enableVertexAttribArray(locations.a_pos);
 	// color uniform
 	gl.uniform1f(locations.u_green_off, Math.sin(Time.sinceStart)/2+0.5);
+	// color matrix
+	glMatrix.mat3.identity(w_mat3);
+	// gfw scale
+	glMatrix.vec2.set(w_vec2, 1/Gfw.scale, 1/Gfw.scale);
+	glMatrix.mat3.scale(w_mat3, w_mat3, w_vec2);
+	// camera movement
+	glMatrix.vec2.set(w_vec2, Gfw.camera.position.x, -Gfw.camera.position.y);
+	glMatrix.mat3.translate(w_mat3, w_mat3, w_vec2);
+	// camera zoom 
+	glMatrix.vec2.set(w_vec2, 1.0/Gfw.camera.zoom, 1.0/Gfw.camera.zoom);
+	glMatrix.mat3.scale(w_mat3, w_mat3, w_vec2);
+	// camera rotation 
+	glMatrix.mat3.rotate(w_mat3, w_mat3, Gfw.camera.rotation);
+	// translate to center
+	glMatrix.vec2.set(w_vec2, -window.innerWidth/2.0, -window.innerHeight/2.0);
+	glMatrix.mat3.translate(w_mat3, w_mat3, w_vec2);
+	// apply matrix
+	gl.uniformMatrix3fv(locations.u_transform, false, w_mat3);
 	// draw
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
