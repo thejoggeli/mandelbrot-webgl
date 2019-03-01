@@ -3,10 +3,15 @@ body {margin:0;overflow:hidden;}
 #gfw-input-overlay:focus {outline:0;}
 canvas:focus {outline:0;}
 
+@font-face {font-family: 'VeraMono'; src: url('font/VeraMono.ttf'); font-weight: normal; font-style: normal;}
+@font-face {font-family: 'VeraMono'; src: url('font/VeraMono-Bold.ttf'); font-weight: bold; font-style: normal;}
+@font-face {font-family: 'VeraMono'; src: url('font/VeraMono-Italic.ttf'); font-weight: normal; font-style: italic;}
+@font-face {font-family: 'VeraMono'; src: url('font/VeraMono-Bold-Italic.ttf'); font-weight: bold; font-style: italic;}
+
 #left-anchor {
-	position:fixed;left:0;top:0;font-size:12px;font-family:courier;
-	text-shadow: 1px 1px #ffffff;z-index:1000;padding:15px;text-align:left;
-	cursor:default;pointer-events:none;
+	position:fixed;left:0;top:0;font-size:12px;font-family:"VeraMono";
+	text-shadow: 1px 1px #ffffff;z-index:1000;padding:8px;text-align:left;
+	cursor:default;pointer-events:none;opacity:0.75;
 }
 #monitor-box {text-shadow:none;display:none;margin-bottom:10px;}
 #monitor-box .monitor-header{font-weight:bold;}

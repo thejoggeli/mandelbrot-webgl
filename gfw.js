@@ -147,11 +147,6 @@ Gfw.cameraMovement = function(speed){
 		cameraX = Math.cos(cameraMoveAngle);
 		cameraY = Math.sin(cameraMoveAngle);
 	}
-	if(Input.isKeyDown(81)){
-		Gfw.camera.rotation += Time.deltaTime;
-	} else if(Input.isKeyDown(69)){
-		Gfw.camera.rotation -= Time.deltaTime;
-	}	
 	Gfw.camera.position.x += cameraX * Time.rawDeltaTime * cameraSpeed / Gfw.camera.zoom;
 	Gfw.camera.position.y += cameraY * Time.rawDeltaTime * cameraSpeed / Gfw.camera.zoom;
 }
@@ -1001,6 +996,50 @@ function extendedCtx(ctx){
 		ctx.quadraticCurveTo(x, y, x + radius, y);
 		ctx.closePath();	
 	}
+}
+
+function Timer(){
+	this.duration = 0;
+	this.startTime = 0;
+	this.endTime = 0; 
+}
+Timer.prototype.start = function(duration){
+	this.duration = duration;
+	this.startTime = Time.currentTime;
+	this.endTime = Time.currentTime+duration;
+}
+Timer.prototype.restart = function(seamless){
+	if(seamless === undefined ? false : seamless){
+		this.startTime += this.duration;
+		this.endTime += this.duration;
+	} else {
+		this.start(this.duration);
+	}
+}
+Timer.prototype.reset = function(){
+	this.startTime = this.endTime = this.duration = 0;
+}
+Timer.prototype.isFinished = function(){
+	return Time.currentTime >= this.endTime;
+}
+Timer.prototype.isRunning = function(){
+	return Time.currentTime < this.endTime;
+}
+Timer.prototype.getAbsoluteRemainingTime = function(){
+	var remaining = this.endTime - Time.currentTime;
+	return remaining <= 0.0 ? 0.0 : remaining;
+}
+Timer.prototype.getRelativeRemainingTime = function(){
+	var remaining = this.endTime - Time.currentTime;
+	return remaining <= 0.0 ? 0.0 : remaining/this.duration;
+}
+Timer.prototype.getAbsolutePassedTime = function(){
+	var passed = Time.currentTime - this.startTime;
+	return passed >= this.duration ? this.duration : passed;
+}
+Timer.prototype.getRelativePassedTime = function(){
+	var passed = Time.currentTime - this.startTime;
+	return passed >= this.duration ? this.duration : passed/this.duration;
 }
 
 function Numbers(){}
