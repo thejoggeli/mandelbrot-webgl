@@ -1,0 +1,43 @@
+#left-anchor-2 {
+	position:fixed;right:0;top:0;z-index:50000;padding:0px;
+	cursor:default;user-select:none;
+	font-size:12px;font-family:"VeraMono";color:white;
+	border-radius:0 0 0 4px;overflow:hidden;
+}
+#left-anchor-2 button {border:1px solid black;background:white;min-width:32px;height:22px;pointer-events:auto;outline:none;border-radius:4px;}
+#left-anchor-2 button:hover {cursor:pointer;}
+#left-anchor-2 button:active {background:black !important; color:white;}
+
+#left-anchor-2 .category {background:#eee7;}
+#left-anchor-2 .category .desc-title {font-size:12px;font-weight:bold;}
+#left-anchor-2 .category .desc {font-size:12px;}
+#left-anchor-2 .category .title {padding:5px;background:black;position:relative;}
+#left-anchor-2 .category .row {color:black;padding:2px 5px;}
+#left-anchor-2 .category .row:first-child {padding-top:4px;}
+#left-anchor-2 .category .row:last-child {padding-bottom:4px;}
+#left-anchor-2 .category .label {display:inline-block;width:45px;font-size:12px;}
+#left-anchor-2 .category .row {font-size:5px;}
+#left-anchor-2 .category button.single.active {background:white;color:black;}
+#left-anchor-2 .category button.single {background:#ccc;color:#555;}
+#left-anchor-2 .category .random-brot {width:100%;margin-top:5px;}
+#left-anchor-2 .category input[type=text] {
+	border:1px solid black;background:white;height:22px;box-sizing:border-box;font-size:12px;color:black;outline:none;
+	font-family:"VeraMono";padding:0 2px;width:50px;text-align:center;border-radius:4px;
+}
+#left-anchor-2 .category input[type=text]:disabled,
+#left-anchor-2 .category button:disabled {
+	background:#ccc;color:#555;opacity:0.5;
+}
+#left-anchor-2 .maximize {display:none}
+#left-anchor-2 .minimize, 
+#left-anchor-2 .maximize {
+	position:absolute;right:0;top:0;z-index:50005;background:black;color:white;font-family:"VeraMono";font-size:16px;
+	height:100%;width:25px;text-align:center;font-weight:bold;line-height:23px;
+}
+#left-anchor-2 .minimize:hover, 
+#left-anchor-2 .maximize:hover {
+	cursor:pointer;color:black;background:white;
+}
+#left-anchor-2 .maximize {
+	position:fixed;height:24px;border-radius:0 0 0 4px;
+}

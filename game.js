@@ -9,32 +9,17 @@ var vertexBuffer;
 var locations = {};
 var w_mat3;
 var w_vec2;
-var numIterations = 40.0;
+var numIterations = 20.0;
 var hueOffset = 0.575;
-var hueRange = 0.1;
+var hueScale = 0.1;
 var hueTimer = true;
+var hueTimerSpeed = 0.035;
 var smoothing = true;
+var fading = 0;
+var fadingScale = 1.0;
 
 $(document).ready(function(){
-	Monitor.setup();
-	Monitor.label("Info");
-	Monitor.set("Fps", "");
-	Monitor.set("Time", "");
-	Monitor.label("Camera");
-	Monitor.set("Position");
-	Monitor.set("Zoom");
-	Monitor.label("Mandelbrot");
-	Controls.setup();
-	Controls.label("Camera");
-	Controls.add("Move", "[W][A][S][D]");
-	Controls.add("Zoom", "[R][F]");
-	Controls.add("Rotate", "[Q][E]");
-	Controls.label("Mandelbrot");
-	Controls.add("Iterations", "[&larr;][&rarr;]");
-	Controls.add("Smoothing", "[P]");
-	Controls.add("HueTimer", "[O]");
-	Controls.add("HueRange", "[1][2]");
-	Controls.add("HueOffset", "[3][4]");
+	Monitor.setup({showTitle: false});
 	// setup Gfw 
 	Gfw.setup({height:256});
 	Gfw.createCanvas("main", {"renderMode": RenderMode.Canvas3d});
@@ -88,8 +73,10 @@ function init(){
 	locations.u_transform = gl.getUniformLocation(mandelbrotShader, "u_transform");
 	locations.u_iterations = gl.getUniformLocation(mandelbrotShader, "u_iterations");
 	locations.u_hue_offset = gl.getUniformLocation(mandelbrotShader, "u_hue_offset");
-	locations.u_hue_range = gl.getUniformLocation(mandelbrotShader, "u_hue_range");
+	locations.u_hue_scale = gl.getUniformLocation(mandelbrotShader, "u_hue_scale");
 	locations.u_smoothing = gl.getUniformLocation(mandelbrotShader, "u_smoothing");
+	locations.u_fading = gl.getUniformLocation(mandelbrotShader, "u_fading");
+	locations.u_fading_scale = gl.getUniformLocation(mandelbrotShader, "u_fading_scale");
 	console.log(locations);
 	
 	// matrix
@@ -97,53 +84,82 @@ function init(){
 	w_vec2 = glMatrix.vec2.create();
 	
 	Gfw.camera.zoom = 100;
-	hueRange = randomFloat(0.1, 1.0);
-	hueOffset = randomFloat(0.0, 1.0);
-	numIterations = randomInt(16,24);
 	
+	generateRandomBrot();
+	
+}
+
+function generateRandomBrot(){
+	hueScale = randomFloat(0.1, 1.0);
+	hueOffset = randomFloat(0.0, 1.0);
+	fading = randomInt(0,3);
+	fadingScale = randomFloat(0.5, 1.5);
+	hueTimerSpeed = randomFloat(0.02, 0.05);
+	ui_apply_values();
+	Gfw.inputOverlay.focus();
+}
+
+function setNumIterations(num){
+	numIterations = Numbers.clamp(num, 0, 99999);	
+	ui_apply_values();
 }
 
 function update(){
 	if(Input.isKeyDown(81)){
-		Gfw.camera.rotation -= Time.deltaTime;
+		Gfw.camera.rotation -= Time.deltaTime*1.25;
 	} else if(Input.isKeyDown(69)){
-		Gfw.camera.rotation += Time.deltaTime;
+		Gfw.camera.rotation += Time.deltaTime*1.25;
 	}	
 	Gfw.cameraMovement(250.0);
-	if(Input.isKeyDown(37)){
-		numIterations = Numbers.clamp(numIterations-numIterations*Time.deltaTime, 0, 1000);
-	} else if(Input.isKeyDown(39)){
-		numIterations = Numbers.clamp(numIterations+numIterations*Time.deltaTime, 0, 1000);	
+	if(Input.isKeyDown(37) || uiMinus.numIterations){
+		setNumIterations(numIterations-numIterations*Time.deltaTime, 0, 50000);
+	} else if(Input.isKeyDown(39) || uiPlus.numIterations){
+		setNumIterations(numIterations+numIterations*Time.deltaTime, 0, 50000);
 	}
-	if(Input.isKeyDown(51)){
+	if(Input.isKeyDown(74) || uiMinus.hueOffset){
 		hueOffset = hueOffset-Time.deltaTime*0.2;
-	} else if(Input.isKeyDown(52)){
+		ui_apply_values();
+	} else if(Input.isKeyDown(76) || uiPlus.hueOffset){
 		hueOffset = hueOffset+Time.deltaTime*0.2;
+		ui_apply_values();
 	}
-	if(Input.isKeyDown(49)){
-		hueRange = Numbers.clamp(hueRange-Time.deltaTime, -100, 100);
-	} else if(Input.isKeyDown(50)){
-		hueRange = Numbers.clamp(hueRange+Time.deltaTime, -100, 100);
-	}		
-	if(Input.keyDown(80)){
-		smoothing = !smoothing;
-	}		
-	if(Input.keyDown(79)){
-		hueTimer = !hueTimer;
+	if(Input.isKeyDown(75) || uiMinus.hueScale){
+		hueScale = Numbers.clamp(hueScale-Time.deltaTime, -100, 100);
+		ui_apply_values();
+	} else if(Input.isKeyDown(73) || uiPlus.hueScale){
+		hueScale = Numbers.clamp(hueScale+Time.deltaTime, -100, 100);
+		ui_apply_values();
 	}
-	if(hueTimer) hueOffset += Time.deltaTime * 0.035;
+	if(Input.isKeyDown(40) || uiMinus.fadingScale){
+		fadingScale = Numbers.clamp(fadingScale-Time.deltaTime, 0, 100);
+		ui_apply_values();
+	} else if(Input.isKeyDown(38) || uiPlus.fadingScale){
+		fadingScale = Numbers.clamp(fadingScale+Time.deltaTime, 0, 100);
+		ui_apply_values();
+	}
+	if(uiMinus.hueTimerSpeed){
+		hueTimerSpeed -= Time.deltaTime*0.05;
+		ui_apply_values();
+	} else if(uiPlus.hueTimerSpeed){
+		hueTimerSpeed += Time.deltaTime*0.05;
+		ui_apply_values();
+	}
+	if(hueTimer){
+		hueOffset += Time.deltaTime * hueTimerSpeed;
+	}
 	hueOffset = (hueOffset-Time.deltaTime*0.2);
 	hueOffset = (hueOffset+Time.deltaTime*0.2)%1.0;
 	// monitor stuffs
-	Monitor.set("Fps", Time.fps);
-	Monitor.set("Time", roundToFixed(Time.sinceStart, 1));
-	Monitor.set("Position", Gfw.camera.position.x.toExponential(2) + "/"+ Gfw.camera.position.y.toExponential(2));
-	Monitor.set("Zoom", Gfw.camera.zoom.toExponential(2));
+	Monitor.set("FPS", Time.fps);
+//	Monitor.set("Time", roundToFixed(Time.sinceStart, 1));
+	/*
 	Monitor.set("Iterations", Math.floor(numIterations));
 	Monitor.set("Smoothing", smoothing ? "On" : "Off");
 	Monitor.set("HueTimer", hueTimer ? "On" : "Off");
-	Monitor.set("HueRange", roundToFixed(hueRange,3));
+	Monitor.set("hueScale", roundToFixed(hueScale,3));
 	Monitor.set("HueOffset", roundToFixed(hueOffset,3));
+	Monitor.set("Fading", fading == 0 ? "None" : (fading == 1 ? "Inner" : "Outer"));
+	Monitor.set("FadingScale", roundToFixed(fadingScale, 3)); */
 }
 
 function render(){
@@ -162,9 +178,12 @@ function render(){
 	gl.uniform1i(locations.u_iterations, Math.floor(numIterations));
 	// smoothing
 	gl.uniform1i(locations.u_smoothing, smoothing ? 1 : 0);
+	// border fading
+	gl.uniform1i(locations.u_fading, fading);
+	gl.uniform1f(locations.u_fading_scale, fadingScale);
 	// hue
 	gl.uniform1f(locations.u_hue_offset, hueOffset);
-	gl.uniform1f(locations.u_hue_range, hueRange);
+	gl.uniform1f(locations.u_hue_scale, hueScale);
 	// color matrix
 	glMatrix.mat3.identity(w_mat3); 
 	// mirror-y (again)

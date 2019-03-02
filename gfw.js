@@ -649,6 +649,10 @@ Monitor.$element;
 Monitor.rows = {};
 Monitor.setup = function(_params){
 	Monitor.$element = $("#monitor-box");
+	Monitor.showTitle = def(_params, "showTitle", true);
+	if(!Monitor.showTitle){
+		$(".monitor-header").hide();
+	}
 	Monitor.$element.show();
 }
 
