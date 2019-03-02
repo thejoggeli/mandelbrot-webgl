@@ -85,6 +85,7 @@ function init(){
 	
 	Gfw.camera.zoom = 100;
 	
+	ui_init();
 	generateRandomBrot();
 	
 }
@@ -96,7 +97,16 @@ function generateRandomBrot(){
 	fadingScale = randomFloat(0.5, 1.5);
 	hueTimerSpeed = randomFloat(0.02, 0.05);
 	ui_apply_values();
-	Gfw.inputOverlay.focus();
+}
+
+function generateMutateBrot(){
+	var strength = 0.1;
+	setNumIterations(numIterations+numIterations*randomFloat(-strength, strength));
+	hueScale += hueScale * randomFloat(-strength, strength);
+	hueOffset += randomFloat(-0.05, 0.05);
+	fadingScale += fadingScale * randomFloat(-strength, strength);
+	hueTimerSpeed += hueTimerSpeed * randomFloat(-strength, strength);
+	ui_apply_values();
 }
 
 function setNumIterations(num){

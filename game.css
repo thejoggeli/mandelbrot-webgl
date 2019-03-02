@@ -20,6 +20,7 @@
 #left-anchor-2 .category button.single.active {background:white;color:black;}
 #left-anchor-2 .category button.single {background:#ccc;color:#555;}
 #left-anchor-2 .category .random-brot {width:100%;margin-top:5px;}
+#left-anchor-2 .category .mutate-brot {width:100%;margin-top:5px;margin-bottom:2px;}
 #left-anchor-2 .category input[type=text] {
 	border:1px solid black;background:white;height:22px;box-sizing:border-box;font-size:12px;color:black;outline:none;
 	font-family:"VeraMono";padding:0 2px;width:50px;text-align:center;border-radius:4px;

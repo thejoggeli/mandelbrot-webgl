@@ -1,7 +1,7 @@
 var uiPlus = {};
 var uiMinus = {};
 
-$(document).ready(function(){
+function ui_init(){
 	$(".single").on("click", function(){
 		var group = $(this).data("group");
 		$(".single[data-group="+group+"]").removeClass("active");
@@ -48,11 +48,14 @@ $(document).ready(function(){
 	$(".random-brot").on("click", function(){
 		generateRandomBrot();
 	});
+	$(".mutate-brot").on("click", function(){
+		generateMutateBrot();
+	});
 	$("button.num-iterations[data-val='plus']").on("click", function(){
-		setNumIterations(numIterations+1);
+		setNumIterations(Math.floor(numIterations+1)+0.5);
 	});
 	$("button.num-iterations[data-val='minus']").on("click", function(){
-		setNumIterations(numIterations-1);
+		setNumIterations(Math.floor(numIterations-1)+0.5);
 	});
 	$(".minimize").on("click", function(){
 		$(".minimize").hide();
@@ -69,7 +72,8 @@ $(document).ready(function(){
 	$("#left-anchor-2 button").on("click", function(){
 		Gfw.inputOverlay.focus();
 	});
-});
+	$("#left-anchor-2").show();
+}
 
 function abortEvent(e){	
 /*	e.preventDefault && e.preventDefault();
