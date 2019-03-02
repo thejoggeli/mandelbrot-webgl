@@ -1,5 +1,6 @@
 var uiPlus = {};
 var uiMinus = {};
+var hueOffsetFocus = false;
 
 function ui_init(){
 	$(".single").on("click", function(){
@@ -78,6 +79,19 @@ function ui_init(){
 		Gfw.inputOverlay.focus();
 	});
 	$("#left-anchor-2").show();
+	$(".hue-offset").on("focus", function(){
+		hueOffsetFocus = true;		
+	});
+	$(".hue-offset").on("blur", function(){
+		hueOffsetFocus = false;
+		while(hueOffset < 0){
+			hueOffset += 1.0;
+		}
+		while(hueOffset > 1){
+			hueOffset -= 1.0;
+		}
+		$("input[type=text].hue-offset").val(roundToFixed(hueOffset, 3));	
+	});
 }
 
 function abortEvent(e){	

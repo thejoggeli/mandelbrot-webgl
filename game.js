@@ -95,7 +95,14 @@ function init(){
 }
 
 function generateRandomBrot(){
-	hueScale = randomFloat(0.1, 1.0);
+	var random = randomFloat(0,100);
+	if(random > 15.0){
+		hueScale = randomFloat(0.0, 1.0);
+	} else if(random > 5.0){
+		hueScale = randomFloat(-4, 4);		
+	} else {
+		hueScale = randomFloat(-8, 8);		
+	}
 	hueOffset = randomFloat(0.0, 1.0);
 	fading = randomInt(0,3);
 	fadingScale = randomFloat(0.5, 1.5);
@@ -115,7 +122,7 @@ function generateMutateBrot(){
 	hueScale += hueScale * randomFloat(-strength, strength);
 	hueOffset += randomFloat(-0.05, 0.05);
 	fadingScale += fadingScale * randomFloat(-strength, strength);
-	saturationScale = Numbers.clamp(fadingScale + randomFloat(-0.05, 0.05), 0, 1);
+	saturationScale = Numbers.clamp(saturationScale + randomFloat(-0.05, 0.05), 0, 1);
 	hueTimerSpeed += hueTimerSpeed * randomFloat(-strength, strength);
 	ui_apply_values();
 }
@@ -172,11 +179,18 @@ function update(){
 		hueTimerSpeed += Time.deltaTime*0.05;
 		ui_apply_values();
 	}
-	if(hueTimer){
+	if(hueTimer && !hueOffsetFocus){
 		hueOffset += Time.deltaTime * hueTimerSpeed;
 	}
-	hueOffset = (hueOffset-Time.deltaTime*0.2);
-	hueOffset = (hueOffset+Time.deltaTime*0.2)%1.0;
+	while(hueOffset < 0){
+		hueOffset += 1.0;
+	}
+	while(hueOffset > 1){
+		hueOffset -= 1.0;
+	}
+	if(hueTimer && !hueOffsetFocus){
+		$("input[type=text].hue-offset").val(roundToFixed(hueOffset, 3));
+	}
 	// monitor stuffs
 	Monitor.set("FPS", Time.fps);
 //	Monitor.set("Time", roundToFixed(Time.sinceStart, 1));
