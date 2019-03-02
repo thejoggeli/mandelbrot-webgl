@@ -21,6 +21,8 @@
 		uniform float u_hue_scale;
 		uniform float u_hue_offset;
 		uniform bool u_smoothing;
+		uniform int u_saturation;
+		uniform float u_saturation_scale;
 		uniform int u_fading;
 		uniform float u_fading_scale;
 		uniform mat3 u_transform;
@@ -62,6 +64,7 @@
 		void colorize_brot(int iterations){
 			float numf = float(iterations);
 			float maxf = float(u_iterations);
+			float saturation = u_saturation_scale;
 			float lightness;
 			if(u_fading == 1){
 				lightness = (numf/maxf)*(numf/maxf)*u_fading_scale;
@@ -75,7 +78,7 @@
 				lightness = 0.5;
 			}
 			if(u_smoothing) numf += 1.0 - log(log2(sqrt(zi_sqr+zr_sqr)));
-			vec3 rgb = hsl2rgb(vec3(mod(numf/maxf*u_hue_scale+u_hue_offset, 1.0), 0.666, lightness));
+			vec3 rgb = hsl2rgb(vec3(mod(numf/maxf*u_hue_scale+u_hue_offset, 1.0), saturation, lightness));
 			gl_FragColor = vec4(rgb, 1);
 		}
 		float hue2rgb(float f1, float f2, float hue) {
@@ -142,21 +145,6 @@
 			</div>
 		</div>
 		<div class="category">
-			<div class="title">Fading</div>
-			<div class="row">
-				<span class="label">Type</span>
-				<button class="fading single" data-group="fading" data-val="0">0</button>
-				<button class="fading single" data-group="fading" data-val="1">1</button>
-				<button class="fading single" data-group="fading" data-val="2">2</button>
-			</div>
-			<div class="row">
-				<span class="label">Scale</span>
-				<button class="fading-scale numbers" data-group="fadingScale" data-val="minus" title="Decrease (Down)">-</button>
-				<input type="text" class="fading-scale numbers" data-group="fadingScale">
-				<button class="fading-scale numbers" data-group="fadingScale" data-val="plus" title="Increase (Up)">+</button>
-			</div>
-		</div>
-		<div class="category">
 			<div class="title">Hue</div>
 			<div class="row">
 				<span class="label">Scale</span>
@@ -180,6 +168,36 @@
 				<button class="hue-timer-speed numbers" data-group="hueTimerSpeed" data-val="minus" title="Decrease">-</button>
 				<input type="text" class="hue-timer-speed numbers" data-group="hueTimerSpeed">
 				<button class="hue-timer-speed numbers" data-group="hueTimerSpeed" data-val="plus" title="Increase">+</button> 
+			</div>
+		</div>
+		<div class="category">
+			<div class="title">Saturation</div>
+		<!--<div class="row">
+				<span class="label">Mode</span>
+				<button class="saturation single" data-group="saturation" data-val="0">0</button>
+				<button class="saturation single" data-group="saturation" data-val="1">1</button>
+				<button class="saturation single" data-group="saturation" data-val="2">2</button>
+			</div>-->
+			<div class="row">
+				<span class="label">Scale</span>
+				<button class="saturation-scale numbers" data-group="saturationScale" data-val="minus" title="Decrease">-</button>
+				<input type="text" class="saturation-scale numbers" data-group="saturationScale">
+				<button class="saturation-scale numbers" data-group="saturationScale" data-val="plus" title="Increase">+</button>
+			</div>
+		</div>
+		<div class="category">
+			<div class="title">Lightness</div>
+			<div class="row">
+				<span class="label">Mode</span>
+				<button class="fading single" data-group="fading" data-val="0">0</button>
+				<button class="fading single" data-group="fading" data-val="1">1</button>
+				<button class="fading single" data-group="fading" data-val="2">2</button>
+			</div>
+			<div class="row">
+				<span class="label">Scale</span>
+				<button class="fading-scale numbers" data-group="fadingScale" data-val="minus" title="Decrease (Down)">-</button>
+				<input type="text" class="fading-scale numbers" data-group="fadingScale">
+				<button class="fading-scale numbers" data-group="fadingScale" data-val="plus" title="Increase (Up)">+</button>
 			</div>
 		</div>
 		<div class="category">

@@ -22,6 +22,11 @@ function ui_init(){
 		fading = parseInt($(this).data("val"));
 		if(old != fading) ui_apply_values();
 	});
+	$(".saturation").on("click", function(e){
+		var old = saturation;
+		saturation = parseInt($(this).data("val"));
+		if(old != saturation) ui_apply_values();
+	});
 	$("button.numbers[data-val='plus']").on("mousedown touchstart", function(e){
 		uiPlus[$(this).data("group")] = true;
 		abortEvent(e);
@@ -86,10 +91,12 @@ function ui_apply_values(){
 	$(".smoothing[data-val='" +  (smoothing ? "on" : "off") + "']").trigger("click");
 	$(".hue-timer[data-val='" +  (hueTimer ? "on" : "off") + "']").trigger("click");
 	$(".fading[data-val='"+fading+"']").trigger("click");
+	$(".saturation[data-val='"+saturation+"']").trigger("click");
 	$("input[type=text].hue-scale").val(roundToFixed(hueScale, 3));
 	$("input[type=text].hue-offset").val(roundToFixed(hueOffset, 3));
 	$("input[type=text].num-iterations").val(Math.floor(numIterations));
 	$("input[type=text].fading-scale").val(roundToFixed(fadingScale, 3));
+	$("input[type=text].saturation-scale").val(roundToFixed(saturationScale, 3));
 	$("input[type=text].hue-timer-speed").val(roundToFixed(hueTimerSpeed, 3));
 	$(".fading-scale").prop("disabled", fading == 0);
 	$(".hue-timer-speed").prop("disabled", hueTimer == false);

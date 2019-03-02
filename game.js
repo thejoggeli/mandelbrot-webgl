@@ -17,6 +17,8 @@ var hueTimerSpeed = 0.035;
 var smoothing = true;
 var fading = 0;
 var fadingScale = 1.0;
+var saturation = 0;
+var saturationScale = 1.0;
 
 $(document).ready(function(){
 	Monitor.setup({showTitle: false});
@@ -77,6 +79,8 @@ function init(){
 	locations.u_smoothing = gl.getUniformLocation(mandelbrotShader, "u_smoothing");
 	locations.u_fading = gl.getUniformLocation(mandelbrotShader, "u_fading");
 	locations.u_fading_scale = gl.getUniformLocation(mandelbrotShader, "u_fading_scale");
+	locations.u_saturation = gl.getUniformLocation(mandelbrotShader, "u_saturation");
+	locations.u_saturation_scale = gl.getUniformLocation(mandelbrotShader, "u_saturation_scale");
 	console.log(locations);
 	
 	// matrix
@@ -95,6 +99,12 @@ function generateRandomBrot(){
 	hueOffset = randomFloat(0.0, 1.0);
 	fading = randomInt(0,3);
 	fadingScale = randomFloat(0.5, 1.5);
+	saturation = randomInt(0,3);
+	if(randomFloat(0,100) < 25.0){
+		saturationScale = randomFloat(0, 1);	
+	} else {
+		saturationScale = randomFloat(0.666-0.2, 0.666+0.2);
+	}
 	hueTimerSpeed = randomFloat(0.02, 0.05);
 	ui_apply_values();
 }
@@ -105,6 +115,7 @@ function generateMutateBrot(){
 	hueScale += hueScale * randomFloat(-strength, strength);
 	hueOffset += randomFloat(-0.05, 0.05);
 	fadingScale += fadingScale * randomFloat(-strength, strength);
+	saturationScale = Numbers.clamp(fadingScale + randomFloat(-0.05, 0.05), 0, 1);
 	hueTimerSpeed += hueTimerSpeed * randomFloat(-strength, strength);
 	ui_apply_values();
 }
@@ -145,6 +156,13 @@ function update(){
 		ui_apply_values();
 	} else if(Input.isKeyDown(38) || uiPlus.fadingScale){
 		fadingScale = Numbers.clamp(fadingScale+Time.deltaTime, 0, 100);
+		ui_apply_values();
+	}
+	if(Input.isKeyDown(40) || uiMinus.saturationScale){
+		saturationScale = Numbers.clamp(saturationScale-Time.deltaTime*0.5, 0, 1);
+		ui_apply_values();
+	} else if(Input.isKeyDown(38) || uiPlus.saturationScale){
+		saturationScale = Numbers.clamp(saturationScale+Time.deltaTime*0.5, 0, 1);
 		ui_apply_values();
 	}
 	if(uiMinus.hueTimerSpeed){
@@ -191,6 +209,9 @@ function render(){
 	// border fading
 	gl.uniform1i(locations.u_fading, fading);
 	gl.uniform1f(locations.u_fading_scale, fadingScale);
+	// saturation
+	gl.uniform1i(locations.u_saturation, saturation);
+	gl.uniform1f(locations.u_saturation_scale, saturationScale);
 	// hue
 	gl.uniform1f(locations.u_hue_offset, hueOffset);
 	gl.uniform1f(locations.u_hue_scale, hueScale);
