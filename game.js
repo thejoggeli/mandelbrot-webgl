@@ -97,7 +97,7 @@ function init(){
 function generateRandomBrot(){
 	var random = randomFloat(0,100);
 	if(random > 15.0){
-		hueScale = randomFloat(0.0, 1.0);
+		hueScale = randomFloat(-1.0, 1.0);
 	} else if(random > 5.0){
 		hueScale = randomFloat(-4, 4);		
 	} else {
