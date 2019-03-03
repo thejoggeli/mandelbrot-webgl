@@ -49,7 +49,8 @@ function ui_init(){
 		uiMinus[$(this).data("group")] = false;
 	});
 	$("input[type=text].numbers").on("keyup change", function(){
-		window[$(this).data("group")] = parseFloat($(this).val());
+		var val = ui_clamp_numbers($(this));
+		window[$(this).data("group")] = val;
 	});
 	$(".random-brot").on("click", function(){
 		generateRandomBrot();
@@ -61,6 +62,9 @@ function ui_init(){
 		setNumIterations(Math.floor(numIterations+1)+0.5);
 	});
 	$("button.num-iterations[data-val='minus']").on("click", function(){
+		setNumIterations(Math.floor(numIterations-1)+0.5);
+	});
+	$("button.num-iterations").on("blur", function(){
 		setNumIterations(Math.floor(numIterations-1)+0.5);
 	});
 	$(".minimize").on("click", function(){
@@ -92,6 +96,30 @@ function ui_init(){
 		}
 		$("input[type=text].hue-offset").val(roundToFixed(hueOffset, 3));	
 	});
+}
+
+function ui_clamp_numbers($input){
+	var val = parseFloat($input.val());
+	var max = $input.data("max");
+	var min = $input.data("min");
+	console.log(val, min, max);
+	if(max !== null && max !== undefined){
+		max = parseFloat(max);
+		if(!isNaN(max) && val > max){
+			val = max;
+			$input.val(max);
+			return max;
+		}
+	}
+	if(min !== null && min !== undefined){
+		min = parseFloat(min);
+		if(!isNaN(min) && val < min){
+			val = min;
+			$input.val(min);
+			return min;
+		}
+	}
+	return val;
 }
 
 function abortEvent(e){	

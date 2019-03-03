@@ -128,7 +128,7 @@ function generateMutateBrot(){
 }
 
 function setNumIterations(num){
-	numIterations = Numbers.clamp(num, 0, 99999);	
+	numIterations = Numbers.clamp(num, 0, 5000);	
 	ui_apply_values();
 }
 
@@ -140,9 +140,9 @@ function update(){
 	}	
 	Gfw.cameraMovement(250.0);
 	if(Input.isKeyDown(37) || uiMinus.numIterations){
-		setNumIterations(numIterations-numIterations*Time.deltaTime, 0, 50000);
+		setNumIterations(numIterations-numIterations*Time.deltaTime);
 	} else if(Input.isKeyDown(39) || uiPlus.numIterations){
-		setNumIterations(numIterations+numIterations*Time.deltaTime, 0, 50000);
+		setNumIterations(numIterations+numIterations*Time.deltaTime);
 	}
 	if(Input.isKeyDown(74) || uiMinus.hueOffset){
 		hueOffset = hueOffset-Time.deltaTime*0.2;

@@ -27,7 +27,7 @@
 		uniform float u_fading_scale;
 		uniform mat3 u_transform;
 		uniform int u_iterations;
-		const int MAX_ITERATIONS = 1000;
+		const int MAX_ITERATIONS = 5000;
 		void colorize_brot(int);
 		vec3 hsl2rgb(vec3 hsl);
 		float cr, ci, zr, zi, zr_sqr, zi_sqr;
@@ -140,7 +140,7 @@
 			<div class="row">
 				<span class="label">Count</span>
 				<button class="num-iterations numbers" data-group="numIterations" data-val="minus" title="Decrease  (Left)">-</button>
-				<input type="text" class="num-iterations numbers" data-group="numIterations">
+				<input type="text" class="num-iterations numbers" data-group="numIterations" data-min="0" data-max="5000">
 				<button class="num-iterations numbers" data-group="numIterations" data-val="plus" title="Increase (Right)">+</button>
 			</div>
 		</div>
@@ -181,7 +181,7 @@
 			<div class="row">
 				<span class="label">Value</span>
 				<button class="saturation-scale numbers" data-group="saturationScale" data-val="minus" title="Decrease">-</button>
-				<input type="text" class="saturation-scale numbers" data-group="saturationScale">
+				<input type="text" class="saturation-scale numbers" data-group="saturationScale" data-min="0.0" data-max="1.0">
 				<button class="saturation-scale numbers" data-group="saturationScale" data-val="plus" title="Increase">+</button>
 			</div>
 		</div>
@@ -196,7 +196,7 @@
 			<div class="row">
 				<span class="label">Scale</span>
 				<button class="fading-scale numbers" data-group="fadingScale" data-val="minus" title="Decrease (Down)">-</button>
-				<input type="text" class="fading-scale numbers" data-group="fadingScale">
+				<input type="text" class="fading-scale numbers" data-group="fadingScale" data-min="0">
 				<button class="fading-scale numbers" data-group="fadingScale" data-val="plus" title="Increase (Up)">+</button>
 			</div>
 		</div>
