@@ -152,17 +152,17 @@ function update(){
 		ui_apply_values();
 	}
 	if(Input.isKeyDown(75) || uiMinus.hueScale){
-		hueScale = Numbers.clamp(hueScale-Time.deltaTime, -100, 100);
+		hueScale = hueScale-Time.deltaTime;
 		ui_apply_values();
 	} else if(Input.isKeyDown(73) || uiPlus.hueScale){
-		hueScale = Numbers.clamp(hueScale+Time.deltaTime, -100, 100);
+		hueScale = hueScale+Time.deltaTime;
 		ui_apply_values();
 	}
 	if(Input.isKeyDown(40) || uiMinus.fadingScale){
-		fadingScale = Numbers.clamp(fadingScale-Time.deltaTime, 0, 100);
+		fadingScale = Numbers.clamp(fadingScale-Time.deltaTime, 0, Infinity);
 		ui_apply_values();
 	} else if(Input.isKeyDown(38) || uiPlus.fadingScale){
-		fadingScale = Numbers.clamp(fadingScale+Time.deltaTime, 0, 100);
+		fadingScale = Numbers.clamp(fadingScale+Time.deltaTime, 0, Infinity);
 		ui_apply_values();
 	}
 	if(Input.isKeyDown(40) || uiMinus.saturationScale){
