@@ -712,6 +712,20 @@ Controls.label = function(name){
 	Controls.$element.append($label);
 }
 
+function Toast(){}
+Toast.show = function(text, duration){
+	$(".toast-text").html(text);
+	$(".toast").finish().clearQueue().show().delay(duration*1000).fadeOut(400);
+}
+Toast.info = function(text, duration){
+	$(".toast").data("type", "info");
+	Toast.show(text, duration);
+}
+Toast.error = function(text, duration){
+	$(".toast").data("type", "error");
+	Toast.show(text, duration);
+}
+
 function MonitorRow(key, name){
 	this.key = key;
 	this.name = name;
