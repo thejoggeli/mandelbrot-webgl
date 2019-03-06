@@ -42,3 +42,4 @@
 #left-anchor-2 .maximize {
 	position:fixed;height:24px;border-radius:0 0 0 4px;
 }
+.save-state {pointer-events:initial;}

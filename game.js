@@ -5,20 +5,16 @@ var vertices = [
 	-1, 1, 0,
 	1, 1, 0,
 ];
+
 var vertexBuffer;
 var locations = {};
 var w_mat3;
 var w_vec2;
-var numIterations = 20.0;
-var hueOffset = 0.575;
-var hueScale = 0.1;
-var hueTimer = true;
-var hueTimerSpeed = 0.035;
-var smoothing = true;
-var fading = 0;
-var fadingScale = 1.0;
-var saturation = 0;
-var saturationScale = 1.0;
+
+var hammer;
+
+var cameraVelocity = new Vector();
+var cameraVelocityLerp = new Lerp2();
 
 $(document).ready(function(){
 	Monitor.setup({showTitle: false});
@@ -33,9 +29,73 @@ $(document).ready(function(){
 	// start
 	Gfw.setBackgroundColor("#002");
 	Gfw.start();
+	Gfw.inputOverlay.off("touchstart");
+	Gfw.inputOverlay.off("touchmove");
+	Gfw.inputOverlay.off("touchend");
 });
 
+var lastPinchEvent;
+var pinchStartPosition;
+var pinchStartZoom;
+var panStartPosition;
+
 function init(){
+	
+	hammer = new Hammer(Gfw.inputOverlay[0], {domEvents: true});
+	hammer.get("pinch").set({enable:true});
+	
+	hammer.on("pinchstart", function(e){
+		cameraVelocityLerp.stop();
+		cameraVelocity.setFloats(0, 0);
+		lastPinchEvent = e;
+		pinchStartZoom = Gfw.camera.zoom;		
+		pinchStartPosition = {x: Gfw.camera.position.x, y: Gfw.camera.position.y};
+		cameraVelocity.x = cameraVelocity.y = 0;
+	});
+	hammer.on("pinchmove", function(e){
+		console.log(e);
+		var rotation = e.rotation - lastPinchEvent.rotation;
+		var scale = e.scale - lastPinchEvent.scale;
+		Gfw.camera.rotation -= rotation/180*Math.PI;
+		Gfw.camera.zoom = pinchStartZoom * e.scale;
+	/*	var dx = (e.deltaX) / Gfw.scale / Gfw.camera.zoom;
+		var dy = (e.deltaY) / Gfw.scale / Gfw.camera.zoom;
+		var angle = Gfw.camera.rotation + Math.atan2(dy,dx);
+		var length = Math.sqrt(dx*dx+dy*dy);
+		dx = Math.cos(angle)*length;
+		dy = Math.sin(angle)*length;
+		Gfw.camera.position.x = pinchStartPosition.x - dx;
+		Gfw.camera.position.y = pinchStartPosition.y - dy; */
+		lastPinchEvent = e;
+	//	console.log(scale);
+	});
+	hammer.on("panstart", function(e){
+		cameraVelocityLerp.stop();
+		cameraVelocity.setFloats(0, 0);
+		panStartPosition = {x: Gfw.camera.position.x, y: Gfw.camera.position.y};
+		cameraVelocity.x = cameraVelocity.y = 0;
+	});
+	hammer.on("panmove", function(e){
+		var dx = (e.deltaX) / Gfw.scale / Gfw.camera.zoom;
+		var dy = (e.deltaY) / Gfw.scale / Gfw.camera.zoom;
+		var angle = Gfw.camera.rotation + Math.atan2(dy,dx);
+		var length = Math.sqrt(dx*dx+dy*dy);
+		dx = Math.cos(angle)*length;
+		dy = Math.sin(angle)*length;
+		Gfw.camera.position.x = panStartPosition.x - dx;
+		Gfw.camera.position.y = panStartPosition.y - dy;
+	});
+	hammer.on("panend", function(e){
+		panStartPosition = {x: Gfw.camera.position.x, y: Gfw.camera.position.y};
+		var vx = -e.velocityX * 1000 / Gfw.scale / Gfw.camera.zoom;
+		var vy = -e.velocityY * 1000 / Gfw.scale / Gfw.camera.zoom;
+		var angle = Gfw.camera.rotation + Math.atan2(vy,vx);
+		var length = Math.sqrt(vx*vx+vy*vy);
+		vx = Math.cos(angle)*length;
+		vy = Math.sin(angle)*length;
+		console.log(cameraVelocityLerp);
+		cameraVelocityLerp.start(vx, vy, 0, 0, 0.5);
+	});
 	
 	// buffers
 	vertexBuffer = gl.createBuffer();
@@ -89,47 +149,17 @@ function init(){
 	
 	Gfw.camera.zoom = 100;
 	
-	ui_init();
-	generateRandomBrot();
+	Ui.init();
+	Mandelbrot.generateRandomBrot();
 	
-}
-
-function generateRandomBrot(){
-	var random = randomFloat(0,100);
-	if(random > 15.0){
-		hueScale = randomFloat(-1.0, 1.0);
-	} else if(random > 5.0){
-		hueScale = randomFloat(-4, 4);		
-	} else {
-		hueScale = randomFloat(-8, 8);		
+	var state = getUrlParameter("state");
+	if(state !== null && state !== undefined && state !== ""){
+		var json = $.parseJSON(state);
+		console.log(json);
+		Mandelbrot.loadState(json);
+		Ui.applyValues();
 	}
-	hueOffset = randomFloat(0.0, 1.0);
-	fading = randomInt(0,3);
-	fadingScale = randomFloat(0.5, 1.5);
-	saturation = randomInt(0,3);
-	if(randomFloat(0,100) < 25.0){
-		saturationScale = randomFloat(0, 1);	
-	} else {
-		saturationScale = randomFloat(0.666-0.2, 0.666+0.2);
-	}
-	hueTimerSpeed = randomFloat(0.02, 0.05);
-	ui_apply_values();
-}
-
-function generateMutateBrot(){
-	var strength = 0.1;
-	setNumIterations(numIterations+numIterations*randomFloat(-strength, strength));
-	hueScale += hueScale * randomFloat(-strength, strength);
-	hueOffset += randomFloat(-0.05, 0.05);
-	fadingScale += fadingScale * randomFloat(-strength, strength);
-	saturationScale = Numbers.clamp(saturationScale + randomFloat(-0.05, 0.05), 0, 1);
-	hueTimerSpeed += hueTimerSpeed * randomFloat(-strength, strength);
-	ui_apply_values();
-}
-
-function setNumIterations(num){
-	numIterations = Numbers.clamp(num, 0, 5000);	
-	ui_apply_values();
+	
 }
 
 function update(){
@@ -139,58 +169,71 @@ function update(){
 		Gfw.camera.rotation += Time.deltaTime*1.25;
 	}	
 	Gfw.cameraMovement(250.0);
-	if(Input.isKeyDown(37) || uiMinus.numIterations){
-		setNumIterations(numIterations-numIterations*Time.deltaTime);
-	} else if(Input.isKeyDown(39) || uiPlus.numIterations){
-		setNumIterations(numIterations+numIterations*Time.deltaTime);
+	if(Input.isKeyDown(37) || Ui.minus.numIterations){
+		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations-Mandelbrot.state.numIterations*Time.deltaTime*0.5);
+	} else if(Input.isKeyDown(39) || Ui.plus.numIterations){
+		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations+Mandelbrot.state.numIterations*Time.deltaTime*0.5);
 	}
-	if(Input.isKeyDown(74) || uiMinus.hueOffset){
-		hueOffset = hueOffset-Time.deltaTime*0.2;
-		ui_apply_values();
-	} else if(Input.isKeyDown(76) || uiPlus.hueOffset){
-		hueOffset = hueOffset+Time.deltaTime*0.2;
-		ui_apply_values();
+	if(Input.isKeyDown(74) || Ui.minus.hueOffset){
+		Mandelbrot.state.hueOffset = Mandelbrot.state.hueOffset-Time.deltaTime*0.2;
+		Ui.applyValues();
+	} else if(Input.isKeyDown(76) || Ui.plus.hueOffset){
+		Mandelbrot.state.hueOffset = Mandelbrot.state.hueOffset+Time.deltaTime*0.2;
+		Ui.applyValues();
 	}
-	if(Input.isKeyDown(75) || uiMinus.hueScale){
-		hueScale = hueScale-Time.deltaTime;
-		ui_apply_values();
-	} else if(Input.isKeyDown(73) || uiPlus.hueScale){
-		hueScale = hueScale+Time.deltaTime;
-		ui_apply_values();
+	if(Input.isKeyDown(75) || Ui.minus.hueScale){
+		Mandelbrot.state.hueScale = Mandelbrot.state.hueScale-Time.deltaTime;
+		Ui.applyValues();
+	} else if(Input.isKeyDown(73) || Ui.plus.hueScale){
+		Mandelbrot.state.hueScale = Mandelbrot.state.hueScale+Time.deltaTime;
+		Ui.applyValues();
 	}
-	if(Input.isKeyDown(40) || uiMinus.fadingScale){
-		fadingScale = Numbers.clamp(fadingScale-Time.deltaTime, 0, Infinity);
-		ui_apply_values();
-	} else if(Input.isKeyDown(38) || uiPlus.fadingScale){
-		fadingScale = Numbers.clamp(fadingScale+Time.deltaTime, 0, Infinity);
-		ui_apply_values();
+	if(Input.isKeyDown(40) || Ui.minus.fadingScale){
+		Mandelbrot.state.fadingScale = Numbers.clamp(Mandelbrot.state.fadingScale-Time.deltaTime, 0, Infinity);
+		Ui.applyValues();
+	} else if(Input.isKeyDown(38) || Ui.plus.fadingScale){
+		Mandelbrot.state.fadingScale = Numbers.clamp(Mandelbrot.state.fadingScale+Time.deltaTime, 0, Infinity);
+		Ui.applyValues();
 	}
-	if(Input.isKeyDown(40) || uiMinus.saturationScale){
-		saturationScale = Numbers.clamp(saturationScale-Time.deltaTime*0.5, 0, 1);
-		ui_apply_values();
-	} else if(Input.isKeyDown(38) || uiPlus.saturationScale){
-		saturationScale = Numbers.clamp(saturationScale+Time.deltaTime*0.5, 0, 1);
-		ui_apply_values();
+	if(Input.isKeyDown(40) || Ui.minus.saturationScale){
+		Mandelbrot.state.saturationScale = Numbers.clamp(Mandelbrot.state.saturationScale-Time.deltaTime*0.5, 0, 1);
+		Ui.applyValues();
+	} else if(Input.isKeyDown(38) || Ui.plus.saturationScale){
+		Mandelbrot.state.saturationScale = Numbers.clamp(Mandelbrot.state.saturationScale+Time.deltaTime*0.5, 0, 1);
+		Ui.applyValues();
 	}
-	if(uiMinus.hueTimerSpeed){
-		hueTimerSpeed -= Time.deltaTime*0.05;
-		ui_apply_values();
-	} else if(uiPlus.hueTimerSpeed){
-		hueTimerSpeed += Time.deltaTime*0.05;
-		ui_apply_values();
+	if(Ui.minus.hueTimerSpeed){
+		Mandelbrot.state.hueTimerSpeed -= Time.deltaTime*0.05;
+		Ui.applyValues();
+	} else if(Ui.plus.hueTimerSpeed){
+		Mandelbrot.state.hueTimerSpeed += Time.deltaTime*0.05;
+		Ui.applyValues();
 	}
-	if(hueTimer && !hueOffsetFocus){
-		hueOffset += Time.deltaTime * hueTimerSpeed;
+	if(Mandelbrot.state.hueTimer && !Ui.hueOffsetFocus){
+		Mandelbrot.state.hueOffset += Time.deltaTime * Mandelbrot.state.hueTimerSpeed;
 	}
-	while(hueOffset < 0){
-		hueOffset += 1.0;
+	while(Mandelbrot.state.hueOffset < 0){
+		Mandelbrot.state.hueOffset += 1.0;
 	}
-	while(hueOffset > 1){
-		hueOffset -= 1.0;
+	while(Mandelbrot.state.hueOffset > 1){
+		Mandelbrot.state.hueOffset -= 1.0;
 	}
-	if(hueTimer && !hueOffsetFocus){
-		$("input[type=text].hue-offset").val(roundToFixed(hueOffset, 3));
+	if(Mandelbrot.state.hueTimer && !Ui.hueOffsetFocus){
+		$("input[type=text].hue-offset").val(roundToFixed(Mandelbrot.state.hueOffset, 3));
 	}
+	if(Input.matchSequence(Mandelbrot.saveSequence, 1)){
+		Mandelbrot.saveState();
+		Input.clearSequence();
+	}
+	if(Input.matchSequence(Mandelbrot.statesSequence, 1)){
+		window.location = "states";
+	}
+	if(cameraVelocityLerp.running){
+		cameraVelocityLerp.update();
+		cameraVelocityLerp.apply(cameraVelocity);
+	}
+	Gfw.camera.position.x += cameraVelocity.x * Time.deltaTime;
+	Gfw.camera.position.y += cameraVelocity.y * Time.deltaTime;
 	// monitor stuffs
 	Monitor.set("FPS", Time.fps);
 //	Monitor.set("Time", roundToFixed(Time.sinceStart, 1));
@@ -217,18 +260,18 @@ function render(){
 	// color uniform
 	gl.uniform1f(locations.u_green_off, Math.sin(Time.sinceStart)/2+0.5);
 	// num iterations
-	gl.uniform1i(locations.u_iterations, Math.floor(numIterations));
+	gl.uniform1i(locations.u_iterations, Math.floor(Mandelbrot.state.numIterations));
 	// smoothing
-	gl.uniform1i(locations.u_smoothing, smoothing ? 1 : 0);
+	gl.uniform1i(locations.u_smoothing, Mandelbrot.state.smoothing ? 1 : 0);
 	// border fading
-	gl.uniform1i(locations.u_fading, fading);
-	gl.uniform1f(locations.u_fading_scale, fadingScale);
+	gl.uniform1i(locations.u_fading, Mandelbrot.state.fading);
+	gl.uniform1f(locations.u_fading_scale, Mandelbrot.state.fadingScale);
 	// saturation
-	gl.uniform1i(locations.u_saturation, saturation);
-	gl.uniform1f(locations.u_saturation_scale, saturationScale);
+	gl.uniform1i(locations.u_saturation, Mandelbrot.state.saturation);
+	gl.uniform1f(locations.u_saturation_scale, Mandelbrot.state.saturationScale);
 	// hue
-	gl.uniform1f(locations.u_hue_offset, hueOffset);
-	gl.uniform1f(locations.u_hue_scale, hueScale);
+	gl.uniform1f(locations.u_hue_offset, Mandelbrot.state.hueOffset);
+	gl.uniform1f(locations.u_hue_scale, Mandelbrot.state.hueScale);
 	// color matrix
 	glMatrix.mat3.identity(w_mat3); 
 	// mirror-y (again)
@@ -254,6 +297,7 @@ function render(){
 	// draw
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
+
 
 
 

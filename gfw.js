@@ -474,6 +474,7 @@ Input.mouse = {
 	downFrame: false,
 	upFrame: false,
 };
+Input.buffer = [];
 Input.setup = function(){
 	for(var i = 0; i < 256; i++){
 		Input.downKeys[i] = false;
@@ -488,6 +489,13 @@ Input.setup = function(){
 			}
 			Input.frameDownKeys[e.keyCode] = true;
 			Input.hasFrameKeys = true;
+		}
+		Input.buffer.push({
+			key: e.keyCode,
+			time: Time.sinceStart,
+		});
+		while(Input.buffer.length > 16){
+			Input.buffer.shift();
 		}
 	});
 	Gfw.inputOverlay.on("keyup", function(e){
@@ -623,6 +631,20 @@ Input.mouseDown = function(){
 Input.mouseUp = function(){
 	return Input.mouse.upFrame;	
 }
+Input.matchSequence = function(sequence, time){
+	if(sequence.length < 1) return false;
+	if(Input.buffer.length < 1) return false;
+	var j = Input.buffer.length-1;
+	for(var i = sequence.length-1; i >= 0; i--, j--){
+		if(j < 0) return false;
+		if(Input.buffer[j].key != sequence[i]) return false;
+		if(Time.sinceStart-Input.buffer[j].time > time) return false;
+	}
+	return true;
+}
+Input.clearSequence = function(){
+	Input.buffer = [];
+}
 
 function TouchWrapper(touch){
 	this.screenPosition = new Vector();
@@ -710,6 +732,30 @@ Controls.label = function(name){
 	var $label = $("<div class='controls-label'></div>");
 	$label.html(name);
 	Controls.$element.append($label);
+}
+
+function Toast(){}
+Toast.show = function(text, duration){
+	$(".toast-text").html(text);
+	$(".toast").finish().clearQueue().fadeIn(250).delay(duration*1000).fadeOut(250);
+}
+Toast.info = function(text, duration){
+	Toast.setClass("info");
+	Toast.show(text, duration);
+}
+Toast.error = function(text, duration){
+	Toast.setClass("error");
+	Toast.show(text, duration);
+}
+Toast.success = function(text, duration){
+	Toast.setClass("success");
+	Toast.show(text, duration);
+}
+Toast.setClass = function(c){
+	$(".toast").removeClass("info");
+	$(".toast").removeClass("error");	
+	$(".toast").removeClass("success");	
+	$(".toast").addClass(c);	
 }
 
 function MonitorRow(key, name){
@@ -1166,4 +1212,45 @@ function pad(pad, str, padLeft) {
 	}
 }
 
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
 
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+};
+
+function Lerp2(){		
+	this.startPosition = new Vector();
+	this.endPosition = new Vector();
+	this.step = 0;
+	this.time = 1;
+	this.running = false;
+};
+Lerp2.prototype.start = function(sx, sy, ex, ey, duration){
+	this.startPosition.x = sx;
+	this.startPosition.y = sy;
+	this.endPosition.x = ex;
+	this.endPosition.y = ey;
+	this.step = 1/duration;
+	this.time = 0;
+	this.running = true;
+}
+Lerp2.prototype.update = function(){
+	this.time += this.step * Time.deltaTime;
+	if(this.time >= 1) this.running = false;
+}
+Lerp2.prototype.stop = function(){
+	this.running = false;
+}
+Lerp2.prototype.apply = function(vector){
+	vector.x = Numbers.lerp(this.startPosition.x, this.endPosition.x, this.time);
+	vector.y = Numbers.lerp(this.startPosition.y, this.endPosition.y, this.time);
+}
