@@ -86,6 +86,7 @@ Mandelbrot.generateRandomBrot = function(){
 	}
 	Mandelbrot.state.hueTimerSpeed = randomFloat(0.02, 0.05);
 	Ui.applyValues();
+	Toast.info("The Mandelbrot just got randomized", 2.5);
 }
 
 Mandelbrot.generateMutateBrot = function(){
@@ -97,6 +98,7 @@ Mandelbrot.generateMutateBrot = function(){
 	Mandelbrot.state.saturationScale = Numbers.clamp(Mandelbrot.state.saturationScale + randomFloat(-0.05, 0.05), 0, 1);
 	Mandelbrot.state.hueTimerSpeed += Mandelbrot.state.hueTimerSpeed * randomFloat(-strength, strength);
 	Ui.applyValues();
+	Toast.info("The Mandelbrot mutated", 2.5);
 }
 
 Mandelbrot.setNumIterations = function(num){

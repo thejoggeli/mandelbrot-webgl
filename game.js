@@ -34,7 +34,7 @@ $(document).ready(function(){
 	Gfw.inputOverlay.off("touchmove");
 	Gfw.inputOverlay.off("touchend");
 	
-	Toast.info("Welcome to the Mandelbrot", 2.5);
+	Toast.info("Welcome to the Mandelbrot", 3);
 	
 });
 
