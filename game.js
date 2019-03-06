@@ -57,9 +57,8 @@ function init(){
 		cameraVelocity.x = cameraVelocity.y = 0;
 	});
 	hammer.on("pinchmove", function(e){
-		console.log(e);
 		var rotation = e.rotation - lastPinchEvent.rotation;
-		var scale = e.scale - lastPinchEvent.scale;
+		var scale = e.scale - lastPinchEvent.scale*0.666;
 		Gfw.camera.rotation -= rotation/180*Math.PI;
 		Gfw.camera.zoom = pinchStartZoom * e.scale;
 		lastPinchEvent = e;
@@ -173,7 +172,7 @@ function update(){
 	if(Input.isKeyDown(37) || Ui.minus.numIterations){
 		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations-Mandelbrot.state.numIterations*Time.deltaTime*0.75);
 	} else if(Input.isKeyDown(39) || Ui.plus.numIterations){
-		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations+Mandelbrot.state.numIterations*Time.deltaTime*075);
+		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations+Mandelbrot.state.numIterations*Time.deltaTime*0.75);
 	}
 	if(Input.isKeyDown(74) || Ui.minus.hueOffset){
 		Mandelbrot.state.hueOffset = Mandelbrot.state.hueOffset-Time.deltaTime*0.2;
