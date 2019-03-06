@@ -65,6 +65,7 @@ Mandelbrot.saveState = function(){
 		Toast.error("Couldn't save state", 2.0);		
 	});	
 }
+
 Mandelbrot.generateRandomBrot = function(){
 	var random = randomFloat(0,100);
 	if(random > 15.0){

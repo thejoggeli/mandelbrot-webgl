@@ -29,9 +29,13 @@ $(document).ready(function(){
 	// start
 	Gfw.setBackgroundColor("#002");
 	Gfw.start();
+	
 	Gfw.inputOverlay.off("touchstart");
 	Gfw.inputOverlay.off("touchmove");
 	Gfw.inputOverlay.off("touchend");
+	
+	Toast.info("Welcome to the Mandelbrot", 2.5);
+	
 });
 
 var lastPinchEvent;
@@ -58,16 +62,7 @@ function init(){
 		var scale = e.scale - lastPinchEvent.scale;
 		Gfw.camera.rotation -= rotation/180*Math.PI;
 		Gfw.camera.zoom = pinchStartZoom * e.scale;
-	/*	var dx = (e.deltaX) / Gfw.scale / Gfw.camera.zoom;
-		var dy = (e.deltaY) / Gfw.scale / Gfw.camera.zoom;
-		var angle = Gfw.camera.rotation + Math.atan2(dy,dx);
-		var length = Math.sqrt(dx*dx+dy*dy);
-		dx = Math.cos(angle)*length;
-		dy = Math.sin(angle)*length;
-		Gfw.camera.position.x = pinchStartPosition.x - dx;
-		Gfw.camera.position.y = pinchStartPosition.y - dy; */
 		lastPinchEvent = e;
-	//	console.log(scale);
 	});
 	hammer.on("panstart", function(e){
 		cameraVelocityLerp.stop();
@@ -86,15 +81,21 @@ function init(){
 		Gfw.camera.position.y = panStartPosition.y - dy;
 	});
 	hammer.on("panend", function(e){
-		panStartPosition = {x: Gfw.camera.position.x, y: Gfw.camera.position.y};
-		var vx = -e.velocityX * 1000 / Gfw.scale / Gfw.camera.zoom;
-		var vy = -e.velocityY * 1000 / Gfw.scale / Gfw.camera.zoom;
-		var angle = Gfw.camera.rotation + Math.atan2(vy,vx);
-		var length = Math.sqrt(vx*vx+vy*vy);
-		vx = Math.cos(angle)*length;
-		vy = Math.sin(angle)*length;
-		console.log(cameraVelocityLerp);
-		cameraVelocityLerp.start(vx, vy, 0, 0, 0.5);
+		var tresh = 10;
+		var vel = Math.sqrt(e.velocityX*e.velocityX+e.velocityY*e.velocityY)*1000;
+		if(vel > tresh){
+			var diag = Math.sqrt(window.innerWidth*window.innerWidth+window.innerHeight*window.innerHeight);
+			var vx = -e.velocityX * 1000 / Gfw.scale / Gfw.camera.zoom;
+			var vy = -e.velocityY * 1000 / Gfw.scale / Gfw.camera.zoom;
+			var angle = Gfw.camera.rotation + Math.atan2(vy,vx);
+			var length = Math.sqrt(vx*vx+vy*vy);
+			vx = Math.cos(angle)*length;
+			vy = Math.sin(angle)*length;
+			console.log(cameraVelocityLerp);
+			var time = vel/diag*0.25;
+			console.log(time);
+			cameraVelocityLerp.start(vx, vy, 0, 0, time > 0.65 ? 0.65 : time);
+		}
 	});
 	
 	// buffers
@@ -170,9 +171,9 @@ function update(){
 	}	
 	Gfw.cameraMovement(250.0);
 	if(Input.isKeyDown(37) || Ui.minus.numIterations){
-		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations-Mandelbrot.state.numIterations*Time.deltaTime*0.5);
+		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations-Mandelbrot.state.numIterations*Time.deltaTime*0.75);
 	} else if(Input.isKeyDown(39) || Ui.plus.numIterations){
-		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations+Mandelbrot.state.numIterations*Time.deltaTime*0.5);
+		Mandelbrot.setNumIterations(Mandelbrot.state.numIterations+Mandelbrot.state.numIterations*Time.deltaTime*075);
 	}
 	if(Input.isKeyDown(74) || Ui.minus.hueOffset){
 		Mandelbrot.state.hueOffset = Mandelbrot.state.hueOffset-Time.deltaTime*0.2;

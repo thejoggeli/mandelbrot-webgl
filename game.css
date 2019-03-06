@@ -3,6 +3,7 @@
 	cursor:default;user-select:none;
 	font-size:12px;font-family:"VeraMono";color:white;
 	border-radius:0 0 0 4px;overflow:hidden;
+	max-height:100%;overflow-y:auto;
 }
 #left-anchor-2 button {border:1px solid black;background:white;min-width:32px;height:22px;pointer-events:auto;outline:none;border-radius:4px;}
 #left-anchor-2 button:hover {cursor:pointer;}
